@@ -1,0 +1,11 @@
+{
+  "name": "app-betina-castelo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Castelo da Betina \u2014 2D beach game: fill the bucket at the sea and build a giant sandcastle. HTML5 Canvas, no dependencies.",
+  "scripts": {
+    "serve": "node tools/serve.js",
+    "check": "node tools/check.js",
+    "simulate": "node tools/simulate.js"
+  }
+}

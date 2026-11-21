@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dia">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f6d86" />
+  <meta name="description" content="Castelo da Betina — ajude a Betina a encher o balde no mar e construir um castelo de areia gigante antes do sol baixar." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff7aa2'/%3E%3Cpath d='M6 26V14h3v-3h3v3h2V9h4v5h2v-3h3v3h3v12Z' fill='%23fff4e0'/%3E%3Cpath d='M14 26v-6a2 2 0 0 1 4 0v6Z' fill='%23c95a7d'/%3E%3C/svg%3E" />
+  <title>CASTELO DA BETINA — Aventura na Praia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-state="menu" data-theme="dia">
+  <canvas id="game" aria-label="Praia onde a Betina constrói um castelo de areia"></canvas>
+
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div id="flash" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M5 27V14h3.4v-3.2h3.4V14h2.4V8.6h3.6V14h2.4v-3.2h3.4V14H27v13H5Z" fill="currentColor"/>
+          <path d="M13.6 27v-6a2.4 2.4 0 0 1 4.8 0v6h-4.8Z" fill="#3a2418" opacity=".85"/>
+          <path d="M16 8.6V4.2l4 1.6-4 1.6" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong>CASTELO DA BETINA</strong>
+        <span id="brandSub">PRAIA</span>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <label class="theme-picker" for="themeSelect">
+        <span class="theme-picker-label">TEMA</span>
+        <select id="themeSelect" aria-label="Escolher tema do jogo">
+          
+        </select>
+        <svg class="chev" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5l5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </label>
+
+      <button id="qualityBtn" class="icon-btn quality-btn" type="button" aria-label="Qualidade gráfica" title="Qualidade gráfica (G)">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.6 16.4 6.3v7.4L10 17.4l-6.4-3.7V6.3L10 2.6Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 2.6v14.8M3.6 6.3 10 10l6.4-3.7" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/></svg>
+        <span data-quality-label>AUTO</span>
+      </button>
+
+      <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pausar jogo" title="Pausar (P)">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="4" width="3.4" height="12" rx="1.2" fill="currentColor"/><rect x="11.6" y="4" width="3.4" height="12" rx="1.2" fill="currentColor"/></svg>
+      </button>
+
+      <button id="soundBtn" class="icon-btn" type="button" aria-label="Alternar som" aria-pressed="true" title="Silenciar (M)">
+        <svg class="icon-sound" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M4 8h3l4-3v10l-4-3H4V8Z" fill="currentColor"/>
+          <path d="M13.5 7.1a4.4 4.4 0 0 1 0 5.8M15.6 5a7.3 7.3 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon-muted" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M4 8h3l4-3v10l-4-3H4V8Z" fill="currentColor"/>
+          <path d="m13 7 5 6M18 7l-5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="hud" class="hud" aria-live="off">
+    <div class="distance-block">
+      <span class="hud-label" id="distanceLabel">CASTELO</span>
+      <div class="distance-value"><span id="distanceValue">0</span><small>%</small></div>
+      <span class="best-line">
+        <span id="bestLabel">FASE</span> <b id="bestValue">1</b>
+        <span class="sep" aria-hidden="true">·</span>
+        <span id="clockLabel">SOL</span> <b id="clockValue" class="clock">0:00</b>
+      </span>
+      <div class="bucket-meter" aria-hidden="true">
+        <span class="hud-label" id="bucketLabel">BALDE</span>
+        <div class="bucket-track"><i id="bucketFill"></i></div>
+      </div>
+    </div>
+
+    <div id="fuelWrap" class="fuel-block">
+      <div class="fuel-top">
+        <span class="fuel-icon" aria-hidden="true">
+          <svg viewBox="0 0 18 18"><path d="M10.4 1.8 4.2 10h4l-1 6.2L14 7.6h-4.2l.6-5.8Z" fill="currentColor"/></svg>
+        </span>
+        <span class="hud-label" id="fuelLabel">ENERGIA</span>
+        <strong id="fuelPct">100%</strong>
+      </div>
+      <div class="fuel-track"><div id="fuelFill" class="fuel-fill"></div></div>
+    </div>
+
+    <div class="coin-block">
+      <span class="coin-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 4.6c-3.1 0-5.7 2.6-7.2 6.2 1 5.4 4 8.2 7.2 8.2s6.2-2.8 7.2-8.2c-1.5-3.6-4.1-6.2-7.2-6.2Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 19V8.4M8.6 17l1.6-8M15.4 17l-1.6-8M6.2 13.4l3.3-4M17.8 13.4l-3.3-4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><rect x="9.6" y="19" width="4.8" height="2.2" rx="1" fill="currentColor"/></svg>
+      </span>
+      <div class="coin-text">
+        <span class="hud-label" id="coinLabel">CONCHINHAS</span>
+        <strong id="coinValue">0</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="pedals" aria-label="Controles de toque">
+    <div class="pedal-group">
+      <button class="pedal pedal-brake" type="button" data-pedal="left" aria-label="Correr para a esquerda">
+        <span class="pedal-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M20 7 11 16l9 9" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="pedal-text">VOLTAR</span>
+      </button>
+      <button class="pedal pedal-brake" type="button" data-pedal="right" aria-label="Correr para a direita">
+        <span class="pedal-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="m12 7 9 9-9 9" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="pedal-text">IR</span>
+      </button>
+    </div>
+
+    <button class="pedal pedal-gas" type="button" data-pedal="jump" aria-label="Pular">
+      <span class="pedal-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M16 25V9m0 0-7 7m7-7 7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="pedal-text">PULAR</span>
+    </button>
+  </div>
+
+  <div id="hint" class="hint" role="status" aria-live="polite"></div>
+  <div id="banner" class="banner" aria-hidden="true"><small id="bannerLabel">FASE</small><strong id="bannerText">1</strong></div>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <!-- ============================== START ============================== -->
+  <div id="startOverlay" class="overlay is-visible" aria-hidden="false">
+    <div class="panel start-panel">
+      <div class="start-main">
+        <div class="eyebrow-row">
+          <span class="eyebrow"><i class="live-dot"></i><span id="startTheme">Rally Padrão</span></span>
+          <span class="version-chip">PRAIA · 2D</span>
+        </div>
+
+        <div class="title-wrap">
+          <p class="title-kicker">UMA AVENTURA NA PRAIA</p>
+          <h1 class="game-title"><span>CASTELO</span><span class="accent">DA BETINA</span></h1>
+        </div>
+
+        <p id="startTagline" class="tagline">A Betina precisa de um castelo gigante antes do sol baixar.</p>
+
+        <div class="start-actions">
+          <button id="startBtn" type="button" class="primary-btn">
+            <span id="startBtnLabel">INICIAR CORRIDA</span>
+            <span class="btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 20 20"><path d="M4 10h11M10.5 5.5 15 10l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+
+          <div class="record-chip">
+            <span id="startBestLabel">MAIS ALTA</span>
+            <strong id="startBest">—</strong>
+          </div>
+        </div>
+
+        <p class="fine-print">Corra até o mar, encha o balde e leve a areia até o castelo. Cuidado para não derramar!</p>
+      </div>
+
+      <aside class="briefing">
+        <div class="briefing-head">
+          <span>BRIEFING</span>
+          <span class="briefing-no">01</span>
+        </div>
+
+        <div class="control-row">
+          <span class="keys"><kbd>A</kbd><kbd>D</kbd><kbd>←</kbd><kbd>→</kbd></span>
+          <div><strong>CORRER</strong><small>Esquerda e direita pela areia</small></div>
+        </div>
+        <div class="control-row">
+          <span class="keys"><kbd>ESPAÇO</kbd><kbd>↑</kbd></span>
+          <div><strong>PULAR</strong><small>Para passar por cima dos caranguejos</small></div>
+        </div>
+        <div class="control-row">
+          <span class="keys touch-key">TOQUE</span>
+          <div><strong>BOTÕES</strong><small>Setas à esquerda, pulo à direita</small></div>
+        </div>
+
+        <div class="briefing-divider"></div>
+
+        <ul class="mission">
+          <li><span class="mini-icon mini-fuel"></span> Encha o balde na beira do mar</li>
+          <li><span class="mini-icon mini-coin"></span> Despeje no castelo e colete <span id="startCoinLabel">conchinhas</span></li>
+          <li><span class="mini-icon mini-head"></span> Descanse na sombra e tome <span id="startFuelContainer">picolés</span></li>
+        </ul>
+
+        <div class="physics-note">
+          <span class="note-tag">DICA</span>
+          <span>Balde cheio pesa: corra suave e não derrame</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ============================== GAME OVER ============================== -->
+  <div id="overOverlay" class="overlay" aria-hidden="true">
+    <div class="panel over-panel">
+      <span class="eyebrow dark"><i class="wreck-dot"></i><span id="overEyebrow">FIM DA BRINCADEIRA</span></span>
+      <h2 id="overTitle" class="over-title">O SOL SE PÔS</h2>
+      <p id="overReason" class="over-reason">Acabou o tempo de brincar.</p>
+
+      <div class="result-grid">
+        <div class="result">
+          <span class="stat-label" id="overLabelA">BALDES</span>
+          <strong id="overDistance">0</strong>
+        </div>
+        <div class="result">
+          <span class="stat-label" id="overLabelB">CONCHINHAS</span>
+          <strong id="overCoins">0</strong>
+        </div>
+        <div class="result">
+          <span class="stat-label" id="overLabelC">ESTRELAS</span>
+          <strong id="overBest">—</strong>
+        </div>
+      </div>
+
+      <div id="newRecord" class="new-record" hidden>★ NOVA FASE MAIS ALTA</div>
+
+      <div class="over-actions">
+        <button id="retryBtn" type="button" class="primary-btn">
+          <span id="retryLabel">TENTAR DE NOVO</span>
+          <span class="btn-arrow" aria-hidden="true">
+            <svg viewBox="0 0 20 20"><path d="M15.8 8.2A6.2 6.2 0 1 0 16 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 4.4v4.2h-4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+        <button id="menuBtn" type="button" class="ghost-btn">MENU</button>
+      </div>
+
+      <p id="overHint" class="over-hint">Dica: pegue picolés pelo caminho para não cansar.</p>
+    </div>
+  </div>
+
+  <!-- ============================== PAUSE ============================== -->
+  <div id="pauseOverlay" class="overlay" aria-hidden="true">
+    <div class="panel pause-panel">
+      <span class="eyebrow"><i class="live-dot"></i>PAUSA</span>
+      <h2 class="pause-title">RESPIRE.</h2>
+      <p class="pause-copy">A Betina foi tomar uma água de coco. Volte quando estiver pronta.</p>
+      <div class="pause-actions">
+        <button id="resumeBtn" type="button" class="primary-btn"><span>CONTINUAR</span></button>
+        <button id="restartBtn" type="button" class="ghost-btn">REINICIAR</button>
+      </div>
+      <p class="pause-keys"><kbd>P</kbd> ou <kbd>ESC</kbd> para continuar</p>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript">Ative o JavaScript para jogar Castelo da Betina.</div>
+  </noscript>
+
+  <!-- data: every theme + its physics, colours, rules and level progression -->
+  <script src="js/themeConfig.js"></script>
+  <!-- simulation: no drawing code -->
+  <script src="js/noise.js"></script>
+  <script src="js/terrain.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/castle.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/critters.js"></script>
+  <script src="js/pickups.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/audio.js"></script>
+  <!-- rendering: sprite cache, quality presets and the painter registries -->
+  <script src="js/render/kit.js"></script>
+  <script src="js/render/scenes.js"></script>
+  <script src="js/render/terrainRenderer.js"></script>
+  <script src="js/render/seaRenderer.js"></script>
+  <script src="js/render/characters.js"></script>
+  <script src="js/render/camp.js"></script>
+  <script src="js/render/castleRenderer.js"></script>
+  <script src="js/render/pickupRenderer.js"></script>
+  <script src="js/render/effects.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
